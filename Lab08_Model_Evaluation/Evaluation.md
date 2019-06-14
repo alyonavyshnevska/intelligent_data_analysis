@@ -28,6 +28,7 @@ We will work with the <a href="https://en.wikipedia.org/wiki/Iris_flower_data_se
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn import metrics
+from sklearn.model_selection import GridSearchCV, cross_val_score, KFold
 
 iris = load_iris()
 print('Loaded {} data points'.format(len(iris.data)))
@@ -45,10 +46,6 @@ import numpy as np
 X_versi = X[:, :2] 
 y_versi = np.zeros(len(y))
 y_versi[y == 1] = 1
-```
-
-```python
-y_versi
 ```
 
 ```python
@@ -102,10 +99,6 @@ show_decision_function(clf_svm, ax)
 ax.set_title('Decision function of a SVM classifier with gamma = 10, C = 1')
 ```
 
-```python
-?clf_svm.name
-```
-
 #### Exercise 1.1 (Performance measures)
 Classify the test data and evaluate the classification performance of the trained model 'clf_svm' using the scikit-learn metrics package. Compare various metrics (classification accuracy, precision, recall, f-score), interpret their values and argue which of them might be the most meaningful to report.
 
@@ -143,6 +136,20 @@ print(report)
 **Answer to Q1:**  
 All of the measures are better for classifying 'other' in comparison to 'iris versicolor'. 3/4 of the test data is indeed 'other', so it's more likely that a piece of test data will indeed be with the label 'other'.
 
+*Precision*: TP/TP+FP  
+How accurate is the classifier when it classifies smth positive?   
+TP/TP+FP  
+
+*Recall*:   
+How many of the positive instances does classifier detect?   
+TP/TP+FN
+
+Unbalanced dataset: accuracy is not a good measure. If a label occurs more often in a data. Even if the model just guesses, it will more likely be correct.
+
+We use ROC in case of the unbalanced dataset. 
+
+Classifying a random positive example more positively than a negative one.
+
 
 #### Exercise 1.2 (ROC curve)
 
@@ -156,7 +163,7 @@ def plot_roc_curves(fprs, tprs):
     fig = plt.figure(figsize=(20,10))
     
     for fpr, tpr in zip(fprs, tprs):
-        plt.plot(fpr, tpr, label='ROC curve (AUC = %0.2f)' % metrics.auc(fpr, tpr))
+        plt.plot(fpr, tpr, label='RO  C curve (AUC = %0.2f)' % metrics.auc(fpr, tpr))
     
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
@@ -169,13 +176,19 @@ def plot_roc_curves(fprs, tprs):
 ```
 
 ```python
-fpr, tpr, threshholds = metrics.roc_curve(y_test, y_hat)
-auc = metrics.auc(fpr, tpr)
+y_score = clf_svm.decision_function(X_test)
+fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score, pos_label=1)
 
 # plot the curve
 plot_roc_curves([fpr], [tpr])
-print("AUC: ", auc)
 ```
+
+**What does the ROC and AUC tell us about the classifier's performance?**  
+Receiver Operator haracteristic: summerizes confusion matrices for different threshholds.
+True Positive Rate = True Positives     
+False positive Rate = False Positives / False Positives + True Negatives (want this to stay zero)
+We analyse ROC when positive instances are rare (1/3 of teh data). 
+
 
 #### Exercise 1.3 (Model comparison)
 
@@ -183,8 +196,9 @@ Train four more SVM models on the training data by varying the regularization pa
 
 ```python
 clfs = []
+C = [1,5,7,15]
 
-for regularizer in range(1,11):
+for regularizer in C:
     clf_svm = SVC(gamma=10, C=regularizer)
     clf_svm.fit(X_train, y_train)
 #     clf_svm.predict(y_test)
@@ -217,39 +231,4 @@ for clf in clfs:
     tprs.append(tpr)
     
 plot_roc_curves(fprs, tprs)
-```
-
-## 2. Hyperparameter Tuning
-
-Many models have hyperparameters, parameters that can't directly be estimated from the data. They have to be manually tuned by the practioner, because there is no analytical formula available to calculate an appropriate value. One example is the regularization parameter $C$ in SVMs.
-
-#### Exercise 2.1 (Nested cross-validation)
-
-Train a SVM classifier for the detection of iris versicolor again, but this time with a proper tuning of the regularization parameter $C$ (you may set the gamma parameter to 10 again). Select a reasonable range of parameter values for $C$ and implement a nested cross-validation (as shown on the slides) by yourself. 
-
-
-You can use the following helper function that creates a list of masks. Each mask can be used as an index set to select the test samples. The function accepts the number of samples *num_samples* in the dataset and the desired number of folds *k* as input parameters. Since the data is sorted by the labels the k-fold CV will likely have trouble with class imbalances in the some cases. So you should randomly shuffle the data before applying the masks.
-
-```python
-# helper function to create k-fold train-test-splits
-# def create_kfold_mask(num_samples, k):
-#     masks = []
-#     fold_size = num_samples / k
-    
-#     for i in range(k):
-#         mask = np.zeros(num_samples, dtype=bool)
-#         mask[i*fold_size:(i+1)*fold_size] = True
-#         masks.append(mask)
-        
-#     return masks
-
-# # visualization of the splits created by 'create_kfold_mask'
-# masks = create_kfold_mask(150, 10)
-# plt.matshow(masks)
-```
-
-```python
-####################
-# INSERT CODE HERE #
-####################
 ```
