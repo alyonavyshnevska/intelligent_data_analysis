@@ -62,13 +62,16 @@ def d_DTW(x, x2, dist):
     for i in range(1, t1+1):
         dp[i, 0] = np.infty
     
-    for j in range(1, t2+1):
+    for j in range(1, t2):
         dp[0, j] = np.infty
         
-    # WRITE YOU CODE HERE
+    for k in range (t1):
+        for l in range(t2):
+            dp[k,l] = (x[k] - x[l]) ** 2 + min(
+            dist(k-1,l-1), dist(k-1,l), dist(k,l-1))
+    return dp[k,l] 
     
-    
-    return dp[t1, t2]
+#     return dp[t1, t2]
 ```
 
 Check your solution:
@@ -80,7 +83,7 @@ try:
     assert d_DTW([1, 2, 3, 2], [1, 2], lambda x, y: 1 if x != y else 0) == 1.0
     assert d_DTW([], [1, 2], lambda x, y: 1 if x != y else 0) == np.infty
     assert d_DTW([], [], lambda x, y: 1 if x != y else 0) == 0.0
-    print ("There is no error in your function!")
+    print ("Yoohhhooo!")
 except AssertionError:
     print ("There is an error in your function!")
 ```
