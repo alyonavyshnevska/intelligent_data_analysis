@@ -69,31 +69,40 @@ def logistic_regression(X, y, num_steps, learning_rate, add_intercept):
     if add_intercept:
         intercept = np.ones((X.shape[0], 1))
         X = np.hstack((intercept, X))
-        
+    
+#     preds = []
     weights = np.zeros(X.shape[1])
+    preds_list = []
     
     for step in range(num_steps):
         scores = np.dot(X, weights)
         predictions = sigmoid(scores)
+        preds_list.append(predictions)
 
         gradient = log_likelihood_gradient(X, y, weights)
         weights -= learning_rate * gradient
         
         if step % 10000 == 0:
-            print (log_likelihood(X, y, weights))
-        
-    return weights
+            print ('weigths', log_likelihood(X, y, weights))
+    
+#     preds = sigmoid_2(scores_list[-1])
+    return weights, preds_list[-1]
 ```
 
 #### Exercise 1.2 (Log likelihood)
 
 Write a function that calculates the negative log likelihood of the data.
 
+
+then we obtain the log likelihood 
+$$\log p(\mathbf{y}|\mathbf{X},\mathbf{w}) = \sum_i y_i \mathbf{w}^T\mathbf{x}_i - \log(1 + \exp(\mathbf{w}^T \mathbf{x}_i))$$
+
 ```python
 def log_likelihood(X, y, weights):
-    ####################
-    # INSERT CODE HERE #
-    ####################
+#     print(y.shape)
+#     print(X.shape)
+#     print(weights.shape)
+    ll = sum(y.dot(weights.T * X) - np.log(1 + np.exp(weights.T * X)))
     return ll
 ```
 
@@ -105,10 +114,9 @@ Please implement the sigmoid function, that accepts a vector of scores as input 
 
 ```python
 def sigmoid(scores):
-    ####################
-    # INSERT CODE HERE #
-    ####################
-    return s
+    s = np.exp (scores) / (1 + np.exp(scores))
+    return np.clip(s, a_min=1e-10, a_max=1-1e-10)
+#     return s
 ```
 
 #### Exercise 1.4 (Log likelihood gradient)
@@ -117,9 +125,9 @@ Write a function that returns the gradient of the negative log likelihood. If we
 
 ```python
 def log_likelihood_gradient(X, y, weights):
-    ####################
-    # INSERT CODE HERE #
-    ####################  
+    xw = X.dot(weights)
+    gradient = X.T.dot(y - sigmoid(xw))
+
     return gradient
 ```
 
@@ -127,9 +135,7 @@ def log_likelihood_gradient(X, y, weights):
 Train the weights of the logistic regression model on the training data, using the function logistic_regression(). Select a reasonable value for the number of steps (e.g. $20000$) and learning rate (e.g. $5e-5$) and make use of the option to add an intercept to the data.
 
 ```python
-####################
-# INSERT CODE HERE #
-####################
+weights, preds= logistic_regression(X_train, y_train, 2000, 0.000001, add_intercept=-4)
 ```
 
 #### Exercise 1.6 (sklearn)
@@ -138,12 +144,11 @@ Now use the sklearn package LogisticRegression to train a logistic regression cl
 
 ```python
 from sklearn.linear_model import LogisticRegression
+# Logistic Regression supports only penalties in ['l1', 'l2']
+# ‘none’ (not supported by the liblinear solver)
+clf = LogisticRegression(random_state=0, solver='lbfgs',
+                         multi_class='multinomial').fit(X_train, y_train)
 
-####################
-# INSERT CODE HERE #
-####################
-
-# clf = 
 
 # Print weights of both models:
 print (clf.intercept_, clf.coef_)  # sklearn's weights
@@ -155,14 +160,10 @@ print (weights)                    # your model's weights
 Calculate predictions for the training data (X_train with added intercept) using your logistic regression model (i.e. calculate the scores of the linear model and map it to probabilities using the sigmoid function) and compare your results to sklearn's accuracy.
 
 ```python
-####################
-# INSERT CODE HERE #
-####################
-
-# preds = 
-
-# Compare results:
-print ('Your accuracy: {0}'.format((preds == y_train).sum().astype(float) / len(preds)))
+# # Compare results:
+from sklearn.metrics import log_loss
+print ('Your accuracy: {0}'.format(log_loss(y_train,preds)))
+# print ('Your accuracy: {0}'.format((preds == y_train).sum().astype(float) / len(preds)))
 print ('Sklearn\'s accuracy: {0}'.format(clf.score(X_train, y_train)))
 ```
 
@@ -212,14 +213,6 @@ y.shape
 
 Use the sklearn package LogisticRegression again to implement a simple logistic regression classifier clf. Consider the cases, where the regularization parameter is chosen to be: $C=0.01;C=0.1; C=1; C=100$. In each case compute the accuracy on the training sample. What do you observe?
 
-```python
-####################
-# INSERT CODE HERE #
-####################
-from sklearn.linear_model import LogisticRegression
-
-# clf = 
-```
 
 We use a function plot_boundary to plot the decision boundary of the trained model.
 
@@ -241,7 +234,16 @@ def plot_boundary(clf, X, y, grid_step=.01, poly_featurizer=None):
     plt.contour(xx, yy, Z, cmap = plt.cm.Paired)
 ```
 
-If everything went well, we can now have a look at the decision boundary of the trained model together with the data. What do you observe?
+```python
+from sklearn.linear_model import LogisticRegression
+
+Cs = [0.01,0.1,1,100]
+
+for c in Cs:
+    clf = LogisticRegression(random_state=0, solver='lbfgs', C=c,
+                             multi_class='multinomial').fit(X, y)
+    print ('Sklearn\'s accuracy: {0}'.format(clf.score(X, y)))
+```
 
 ```python
 plot_boundary(clf, X, y, grid_step=.01)
@@ -250,11 +252,17 @@ plt.scatter(X[y == 1, 0], X[y == 1, 1], c='green', label='Non Defect')
 plt.scatter(X[y == -1, 0], X[y == -1, 1], c='red', label='Defect')
 plt.xlabel("Test1")
 plt.ylabel("Test2")
-plt.title('Logit with C= {}'.format(C))
+plt.title('Logit with C= {}'.format(100))
 plt.legend();
 
-print("accuracy:", round(clf.score(X, y), 3))
+print("accuracy:", round(clf.score(X, y), 7))
 ```
+
+If everything went well, we can now have a look at the decision boundary of the trained model together with the data. What do you observe?
+
+
+For this dataset, we cannot separate the data points by drawing a straight line through a 2D plane. We need to introduce either high-dimentional places to place the input data in or to come up with a non-linear function.
+
 
 #### Exercise 2.2 (Polynomial features)
 
