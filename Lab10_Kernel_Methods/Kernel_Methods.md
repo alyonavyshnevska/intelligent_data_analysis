@@ -65,16 +65,18 @@ def d_DTW(x, x2, dist):
     for j in range(1, t2):
         dp[0, j] = np.infty
         
-    for k in range (t1):
-        for l in range(t2):
-            dp[k,l] = (x[k] - x[l]) ** 2 + min(
-            dist(k-1,l-1), dist(k-1,l), dist(k,l-1))
-    return dp[k,l] 
+    for i in range (1,t1+1):
+        for j in range(1,t2+1):
+            dp[i,j] = dist(x[i-1], x2[j-1]) + min(dp[i-1,j-1], dp[i-1,j], dp[i,j-1])
     
-#     return dp[t1, t2]
+    return dp[t1, t2]
 ```
 
 Check your solution:
+
+```python
+d_DTW([1, 2, 3, 3], [1, 2, 3], lambda x, y: 1 if x != y else 0)
+```
 
 ```python
 try:
@@ -108,13 +110,16 @@ Implement the missing distance metrics.
 
 ```python
 def d1(x, x2):
-    # WRITE YOU CODE HERE
+    if x != x2:
+        return 1.0
+    else:
+        return 0.0
 
 def d2(x, x2):
-    # WRITE YOU CODE HERE
+    return (x-x2) ** 2
 
 def d3(x, x2):
-    # WRITE YOU CODE HERE
+    return np.abs(x-x2)
 
 ```
 
@@ -154,7 +159,7 @@ def build_dtw_gram_matrix(xs, x2s, k):
 ```
 
 ```python
-build_dtw_gram_matrix([[1, 2], [2, 3]], [[1, 2, 3], [4]], k1)
+build_dtw_gram_matrix([[1, 2], [2, 3]], [[1, 2, 3], [4]], k2)
 ```
 
 ## 2. Kernel SVM
@@ -194,11 +199,13 @@ def learn_reg_kernel_ERM(X, y, lbda, k, loss=hinge_loss, reg=L2_reg, max_iter=20
     
     g_old = None
     
-    K = ??? # MODIFY; fill in; hint: use gram matrix defined above
-    w = np.random.randn(num_features) # modify; hint: w has as many entries as training examples (K.shape[0])
+#     K = ??? # MODIFY; fill in; hint: use gram matrix defined above
+    K = build_dtw_gram_matrix(X, X, k)
+    w = np.random.randn(K.shape[0]) # modify; hint: w has as many entries as training examples (K.shape[0])
     
     for _ in range(max_iter):
-        h = np.dot(X, w) # MODIFY; hint: see slide 20,21, and 35 (primal vs. dual view)
+#         h = np.dot(X, w) # MODIFY; hint: see slide 20,21, and 35 (primal vs. dual view)
+        h = np.dot(K, w) # MODIFY; hint: see slide 20,21, and 35 (primal vs. dual view)
         l,lg = loss(h, y)
         
         if verbose:
@@ -208,9 +215,12 @@ def learn_reg_kernel_ERM(X, y, lbda, k, loss=hinge_loss, reg=L2_reg, max_iter=20
         g = lg + rg 
         
         if g_old is not None:
+#             eta = eta*(np.dot(g_old.T,g_old))/(np.dot((g_old - g).T, g_old))
             eta = eta*(np.dot(g_old.T,g_old))/(np.dot((g_old - g).T, g_old)) # MODIFY
+#             eta = np.linalg.inv(K + lbda * np.eye(len(K))).dot(y)
             # hint: gram matrix K changes scalar product from <x, x'> = x^T x to x^T K x
-            
+        
+        #weights
         w = w - eta*g
         if (np.linalg.norm(eta*g)<tol):
             break
@@ -256,7 +266,7 @@ from sklearn.model_selection import train_test_split
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-print X_train.shape, X_test.shape
+print (X_train.shape, X_test.shape)
 ```
 
 ```python
@@ -352,7 +362,7 @@ Vary the choices of the kernel functions, regularization parameters and kernel s
 estimator = KernelEstimator(k2, 2.0)   # MODIFY 
 estimator.fit(X_train, y_train)
 print ("Accuracy {}".format(estimator.score(X_train, y_train)))
-plot_learning_curve(KernelEstimator(k2, 2.0), 'Euclidean distance DTW, lambda = 1.0', X_train, y_train, cv=None, scoring="accuracy", train_sizes=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+plot_learning_curve(KernelEstimator(k2, 2.0), 'Euclidean distance DTW, lambda = 1.0', X_train, y_train, cv=3, scoring="accuracy", train_sizes=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 ```
 
 ```python
