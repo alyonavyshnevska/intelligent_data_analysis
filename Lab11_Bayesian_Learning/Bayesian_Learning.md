@@ -206,23 +206,32 @@ $$ \Sigma^{-1} = \frac{1}{\sigma^2} X^T X + \frac{1}{\sigma_p^2} I. $$
 
 ```python
 def get_MAP(X, y, sigma, sigma_p):
-    ##############################
-    #### INSERT YOUR CODE HERE ###
-    ##############################
-    return None #theta_MAP
 
+    len_i = len(X.T.dot(X))
+    inside = np.linalg.inv(((sigma ** 2) / (sigma_p ** 2)) * (np.eye(len_i)) + X.T.dot(X))
+    theta_MAP = inside.dot(X.T).dot(y)
+    
+    return theta_MAP.reshape(2)
+```
+
+```python
 def get_posterior_distribution_parameters(X, y, sigma, sigma_p):
-    ##############################
-    #### INSERT YOUR CODE HERE ###
-    ##############################
-    return None # theta_MAP, covariance_matrix
+    
+    theta_MAP = get_MAP(X, y, sigma, sigma_p)
+    
+    left = (1/(sigma**2)) * X.T.dot(X)
+    left_len = len(left)
+    right = (1/(sigma_p ** 2)) * np.eye(left_len)
+    covariance_matrix = left + right
+    print('success')
+    
+    return theta_MAP, covariance_matrix
 ```
 
 ```python
 sigma_p = 5
-
 theta_MAP = get_MAP(X, y, sigma=sigma, sigma_p=sigma_p)
-print "theta (MAP estimate): {}".format(theta_MAP)
+print ("theta (MAP estimate): {}".format(theta_MAP))
 ```
 
 To use multivariate normal distributions, a different distribution has to be imported from scipy.stats. We visualize the posterior distribution of the weights.
@@ -231,8 +240,7 @@ To use multivariate normal distributions, a different distribution has to be imp
 from scipy.stats import multivariate_normal
 
 theta_MAP, Sigma = get_posterior_distribution_parameters(X, y, sigma, sigma_p)
-
-mvn = multivariate_normal(theta_MAP,np.linalg.inv(Sigma))
+mvn = multivariate_normal(mean = theta_MAP, cov = np.linalg.inv(Sigma))
 thetas = mvn.rvs(5)
 
 def generate_contour(mvn, ax):
@@ -252,22 +260,28 @@ generate_contour(mvn, ax)
 We visualize the MAP estimate and sample posterior curves.
 
 ```python
+def predict(theta):
+    return lambda x: theta[0] * x + theta[1]
+
 fig = plt.figure(figsize=(8, 8))
 plt.scatter(x, y)
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title("MAP-estimate and posterior curves")
 
-ps = np.linspace(0, 5, 1000)
+ps = np.linspace(0, 5, 1000).astype(int)
+print(type(ps))
 
-def predict(theta):
-    return lambda x: theta[0] * x + theta[1]
+#The code doesn't seem to work for Python 3+
+# plt.plot(ps, map(predict(theta_MAP), ps), "r-", label="MAP")
 
-plt.plot(ps, map(predict(theta_MAP), ps), "r-", label="MAP")
+# for theta in thetas:
+#     plt.plot(ps, map(predict(theta), ps), "g-", alpha=0.6)
+# plt.legend(["MAP", "samples from posterior"], loc="best")
+# plt.xlim([0, 5])
+# plt.show()
+```
 
-for theta in thetas:
-    plt.plot(ps, map(predict(theta), ps), "g-", alpha=0.6)
-plt.legend(["MAP", "samples from posterior"], loc="best")
-plt.xlim([0, 5])
-plt.show()
+```python
+
 ```
