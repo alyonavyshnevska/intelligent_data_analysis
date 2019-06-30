@@ -69,6 +69,9 @@ fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 # sample 1000 points from the 0.01 percentile to 0.99 percentile
 x = np.linspace(norm.ppf(0.001), norm.ppf(0.999), 1000) 
 
+# print(x.shape)
+# print(x)
+
 num_samples = [10, 100, 1000, 10000]
 # we go through the axes one by one, need to make the 2x2 matrix linear before
 for i, ax in enumerate(axes.reshape(4)):
@@ -81,6 +84,13 @@ for i, ax in enumerate(axes.reshape(4)):
 ```
 
 Generators are a special kind of functions in Python. Instead of returning only a single value, they behave like an iterator, i.e.,  return a (possibly infinite) sequence of values. Syntactically, the only difference between a 'normal' function and a generator is that  a generator uses the <b>yield</b> keyword rather than <b>return</b>. Once <b>yield</b> is used in the definition of a function,  the <b>next()</b> method is generated automatically. Each time, the generator's <b>next()</b> method is called, the generator function is executed until the <b>yield</b> keyword is reached. Similar to <b>return</b>, it returns the value given as parameter. If the generator is told to generate more values (using <b>next()</b>), the execution continues from the point of the last call of <b>yield</b>. Typically, <b>yield</b> is inside a (usually infinite) loop.  As an example, we write a generator that generates the natural numbers $\mathbb{N}_0$, i.e. $0, 1, 2, \dots$.
+
+
+Notes:  
+Calling the function does not execute it.   
+Instead, the function returns a generator object which is used to control execution.  
+
+next()
 
 ```python
 def natural_numbers():
@@ -95,7 +105,7 @@ def natural_numbers():
 gen = natural_numbers()
 print (type(gen))
 print (next(gen))
-print ([next(gen) for i in range(100)]) # take 100 numbers, note that 0 was already generated!
+print ([next(gen) for i in range(10)]) # take 10 numbers, note that 0 was already generated!
 ```
 
 <b>Exercise 1</b>: Complete the code of the following three generators:
@@ -110,24 +120,31 @@ print ([next(gen) for i in range(100)]) # take 100 numbers, note that 0 was alre
 
 ```python
 def uniform_generator(a, b):
-    ##############################
-    #### INSERT YOUR CODE HERE ###
-    ##############################
-    yield 0
+    while a < b:
+        distr = uniform(loc=a, scale=b)
+        yield distr.rvs(1)
         
 def normal_generator(mean, std):
-    ##############################
-    #### INSERT YOUR CODE HERE ###
-    ##############################
-    yield 0
+    while std >= 0:
+        yield norm.rvs(loc=mean, scale=std)
 
         
 def data_generator(f, x_gen, noise_gen):
-    ##############################
-    #### INSERT YOUR CODE HERE ###
-    ##############################
-    yield 0
+    
+    while True:
+        x = next(x_gen)
+        eps = next(noise_gen)
+        y = f(x) + eps
+        yield x,y
 
+```
+
+```python
+# Test
+gen = uniform_generator(1,4)
+print (type(gen))
+print (next(gen))
+print ([next(gen) for i in range(10)]) # take 100 numbers, note that 0 was already generated!
 ```
 
 ```python
