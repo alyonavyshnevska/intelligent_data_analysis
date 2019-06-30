@@ -276,12 +276,10 @@ Compute polynomial features of degree $r=3$. Use the sklearn package PolynomialF
 
 ```python
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
 
-####################
-# INSERT CODE HERE #
-####################
-
-# X_poly = 
+poly = PolynomialFeatures(3)
+X_poly = poly.fit_transform(X)
 ```
 
 #### Exercise 2.3
@@ -289,11 +287,9 @@ from sklearn.preprocessing import PolynomialFeatures
 Now train a logistic regression model clf_2 using the polynomial features.
 
 ```python
-####################
-# INSERT CODE HERE #
-####################
-
-# clf_2 = 
+clf_2 = LogisticRegression()
+clf_2.fit(X_poly, y)
+# print ('Sklearn\'s accuracy: {0}'.format(model.score(X, y)))
 ```
 
 Let's evaluate and plot the decision boundary again. What do you observe?
@@ -305,7 +301,7 @@ plt.scatter(X[y == 1, 0], X[y == 1, 1], c='green', label='Not Defect')
 plt.scatter(X[y == -1, 0], X[y == -1, 1], c='red', label='Defect')
 plt.xlabel("Test1")
 plt.ylabel("Test2")
-plt.title('Logit with C= {}'.format(C))
+plt.title('Logit with C= {}'.format(100))
 plt.legend();
 
 print("Prediction Score:", 
