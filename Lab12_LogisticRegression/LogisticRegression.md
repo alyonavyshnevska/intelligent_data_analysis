@@ -287,7 +287,7 @@ X_poly = poly.fit_transform(X)
 Now train a logistic regression model clf_2 using the polynomial features.
 
 ```python
-clf_2 = LogisticRegression()
+clf_2 = LogisticRegression(C=100)
 clf_2.fit(X_poly, y)
 # print ('Sklearn\'s accuracy: {0}'.format(model.score(X, y)))
 ```
