@@ -272,7 +272,8 @@ plt.title("MAP-estimate and posterior curves")
 ps = np.linspace(0, 5, 1000).astype(int)
 print(type(ps))
 
-#The code doesn't seem to work for Python 3+
+#The code doesn't seem to work for Python 3+ (I think the reason are generator functions) and
+# I couldn't find a way to fix it.
 # plt.plot(ps, map(predict(theta_MAP), ps), "r-", label="MAP")
 
 # for theta in thetas:
