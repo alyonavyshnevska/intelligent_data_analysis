@@ -70,7 +70,6 @@ def logistic_regression(X, y, num_steps, learning_rate, add_intercept):
         intercept = np.ones((X.shape[0], 1))
         X = np.hstack((intercept, X))
     
-#     preds = []
     weights = np.zeros(X.shape[1])
     preds_list = []
     
@@ -85,7 +84,6 @@ def logistic_regression(X, y, num_steps, learning_rate, add_intercept):
         if step % 10000 == 0:
             print ('weigths', log_likelihood(X, y, weights))
     
-#     preds = sigmoid_2(scores_list[-1])
     return weights, preds_list[-1]
 ```
 
@@ -115,8 +113,9 @@ Please implement the sigmoid function, that accepts a vector of scores as input 
 ```python
 def sigmoid(scores):
     s = np.exp (scores) / (1 + np.exp(scores))
+    
+    #prevent dividing by 0 by assuring that the result is never exactly 0
     return np.clip(s, a_min=1e-10, a_max=1-1e-10)
-#     return s
 ```
 
 #### Exercise 1.4 (Log likelihood gradient)
@@ -214,6 +213,9 @@ y.shape
 Use the sklearn package LogisticRegression again to implement a simple logistic regression classifier clf. Consider the cases, where the regularization parameter is chosen to be: $C=0.01;C=0.1; C=1; C=100$. In each case compute the accuracy on the training sample. What do you observe?
 
 
+Answer: The regularization parameter has influence on the accuracy. While small C's such as 0.01 and 0.1 yield accuracy 0f .50 and .53, 1 or 100 both yield .55 accuracy. 
+
+
 We use a function plot_boundary to plot the decision boundary of the trained model.
 
 ```python
@@ -261,7 +263,7 @@ print("accuracy:", round(clf.score(X, y), 7))
 If everything went well, we can now have a look at the decision boundary of the trained model together with the data. What do you observe?
 
 
-For this dataset, we cannot separate the data points by drawing a straight line through a 2D plane. We need to introduce either high-dimentional places to place the input data in or to come up with a non-linear function.
+Answer: For this dataset, we cannot separate the data points by drawing a straight line through a 2D plane. We need to introduce either high-dimentional places to place the input data in or to come up with a non-linear function.
 
 
 #### Exercise 2.2 (Polynomial features)
@@ -306,8 +308,4 @@ plt.legend();
 
 print("Prediction Score:", 
 round(clf_2.score(X_poly, y), 3))
-```
-
-```python
-
 ```
