@@ -121,7 +121,7 @@ print ([next(gen) for i in range(10)]) # take 10 numbers, note that 0 was alread
 ```python
 def uniform_generator(a, b):
     while a < b:
-        distr = uniform(loc=a, scale=b)
+        distr = uniform(loc=a, scale=b-a)
         yield distr.rvs(1)
         
 def normal_generator(mean, std):
@@ -180,6 +180,10 @@ x, y = zip(*data) # The asterisk unpacks data; i.e., this line corresponds to x,
 ```
 
 ```python
+data
+```
+
+```python
 plt.figure(figsize=(8, 8))
 plt.scatter(x, y)
 plt.xlabel('x')
@@ -208,8 +212,9 @@ $$ \Sigma^{-1} = \frac{1}{\sigma^2} X^T X + \frac{1}{\sigma_p^2} I. $$
 def get_MAP(X, y, sigma, sigma_p):
 
     len_i = len(X.T.dot(X))
-    inside = np.linalg.inv(((sigma ** 2) / (sigma_p ** 2)) * (np.eye(len_i)) + X.T.dot(X))
+    inside = np.linalg.inv(((sigma ** 2) / (sigma_p ** 2)) * (np.eye(X.shape[1])) + X.T.dot(X))
     theta_MAP = inside.dot(X.T).dot(y)
+    
     
     return theta_MAP.reshape(2)
 ```
@@ -221,7 +226,7 @@ def get_posterior_distribution_parameters(X, y, sigma, sigma_p):
     
     left = (1/(sigma**2)) * X.T.dot(X)
     left_len = len(left)
-    right = (1/(sigma_p ** 2)) * np.eye(left_len)
+#     right = (1/(sigma_p ** 2)) * np.eye(left_len)
     covariance_matrix = left + right
     print('success')
     
@@ -235,6 +240,10 @@ print ("theta (MAP estimate): {}".format(theta_MAP))
 ```
 
 To use multivariate normal distributions, a different distribution has to be imported from scipy.stats. We visualize the posterior distribution of the weights.
+
+
+The most likely model is in the middle
+(not the model that most liely generates the data)
 
 ```python
 from scipy.stats import multivariate_normal
@@ -272,17 +281,12 @@ plt.title("MAP-estimate and posterior curves")
 ps = np.linspace(0, 5, 1000).astype(int)
 print(type(ps))
 
-#The code doesn't seem to work for Python 3+ (I think the reason are generator functions) and
-# I couldn't find a way to fix it.
-# plt.plot(ps, map(predict(theta_MAP), ps), "r-", label="MAP")
 
-# for theta in thetas:
-#     plt.plot(ps, map(predict(theta), ps), "g-", alpha=0.6)
-# plt.legend(["MAP", "samples from posterior"], loc="best")
-# plt.xlim([0, 5])
-# plt.show()
-```
+plt.plot(ps, list(map(predict(theta_MAP), ps)), "r-", label="MAP")
 
-```python
-
+for theta in thetas:
+    plt.plot(ps, list(map(predict(theta), ps)), "g-", alpha=0.6)
+plt.legend(["MAP", "samples from posterior"], loc="best")
+plt.xlim([0, 5])
+plt.show()
 ```
