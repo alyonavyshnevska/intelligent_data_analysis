@@ -100,7 +100,9 @@ def log_likelihood(X, y, weights):
 #     print(y.shape)
 #     print(X.shape)
 #     print(weights.shape)
-    ll = sum(y.dot(weights.T * X) - np.log(1 + np.exp(weights.T * X)))
+#     ll = sum(y.dot(weights.T * X) - np.log(1 + np.exp(weights.T * X)))
+    scores = np.dot(X, weights)
+    ll = - np.sum ( y*scores - np.log (1 + np.exp(scores)))
     return ll
 ```
 
@@ -112,10 +114,10 @@ Please implement the sigmoid function, that accepts a vector of scores as input 
 
 ```python
 def sigmoid(scores):
-    s = np.exp (scores) / (1 + np.exp(scores))
+    return 1 / (1 + np.exp(- scores))
     
     #prevent dividing by 0 by assuring that the result is never exactly 0
-    return np.clip(s, a_min=1e-10, a_max=1-1e-10)
+#     return np.clip(s, a_min=1e-10, a_max=1-1e-10)
 ```
 
 #### Exercise 1.4 (Log likelihood gradient)
@@ -124,8 +126,12 @@ Write a function that returns the gradient of the negative log likelihood. If we
 
 ```python
 def log_likelihood_gradient(X, y, weights):
-    xw = X.dot(weights)
-    gradient = X.T.dot(y - sigmoid(xw))
+#     xw = X.dot(weights)
+#     gradient = X.T.dot(y - sigmoid(xw))
+    scores = np.dot(X, weights)
+    preds = sigmoid(scores)
+    error = y-preds
+    gradient = - np.dot (X.T, error)
 
     return gradient
 ```
@@ -134,7 +140,10 @@ def log_likelihood_gradient(X, y, weights):
 Train the weights of the logistic regression model on the training data, using the function logistic_regression(). Select a reasonable value for the number of steps (e.g. $20000$) and learning rate (e.g. $5e-5$) and make use of the option to add an intercept to the data.
 
 ```python
-weights, preds= logistic_regression(X_train, y_train, 2000, 0.000001, add_intercept=-4)
+weights, preds= logistic_regression(X_train, y_train, 30000, 5e-5, add_intercept=True)
+# 5 * np.exp(-5)
+print(weights)
+
 ```
 
 #### Exercise 1.6 (sklearn)
@@ -145,7 +154,7 @@ Now use the sklearn package LogisticRegression to train a logistic regression cl
 from sklearn.linear_model import LogisticRegression
 # Logistic Regression supports only penalties in ['l1', 'l2']
 # ‘none’ (not supported by the liblinear solver)
-clf = LogisticRegression(random_state=0, solver='lbfgs',
+clf = LogisticRegression(random_state=0, solver='lbfgs', C=1000,
                          multi_class='multinomial').fit(X_train, y_train)
 
 
@@ -161,8 +170,11 @@ Calculate predictions for the training data (X_train with added intercept) using
 ```python
 # # Compare results:
 from sklearn.metrics import log_loss
-print ('Your accuracy: {0}'.format(log_loss(y_train,preds)))
-# print ('Your accuracy: {0}'.format((preds == y_train).sum().astype(float) / len(preds)))
+data_with_intercept = np.hstack((np.ones((X_train.shape[0], 1)), X_train))
+final_scores = np.dot(data_with_intercept, weights)
+preds = np.round(sigmoid(final_scores))
+# print ('Your accuracy: {0}'.format(log_loss(y_train,preds)))
+print ('Your accuracy: {0}'.format((preds == y_train).sum().astype(float) / len(preds)))
 print ('Sklearn\'s accuracy: {0}'.format(clf.score(X_train, y_train)))
 ```
 
@@ -308,4 +320,12 @@ plt.legend();
 
 print("Prediction Score:", 
 round(clf_2.score(X_poly, y), 3))
+```
+
+```python
+
+```
+
+```python
+
 ```
