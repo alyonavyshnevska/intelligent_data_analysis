@@ -1,7 +1,8 @@
-# Intelligent Data Analysis
-## University of Potsdam
-## Summer Term 2019
-## Lecturer: Prof.Dr.Tobias Scheffer
+# Intelligent Data Analysis  
+
+*University of Potsdam*
+*Summer Term 2019*
+*Lecturer: Prof.Dr.Tobias Scheffer*
 
 Topics covered:
 - Learning Problems, Loss Functions, Regularizations
