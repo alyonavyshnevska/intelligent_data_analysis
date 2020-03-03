@@ -1,4 +1,4 @@
-# Intelligent Data Analysis  
+# Machine Learning  
 
 *University of Potsdam*  
 *Summer Term 2019*   
@@ -12,9 +12,9 @@ Topics covered:
 - Random Forests
 - Linear Classification
 - Linear Regression
-- Neural Networks
+- Logistic Regression
 - Kernel Methods
 - Bayesian Learning, Gaussian Processes
-- Logistic Regression
+- Neural Networks (from scratch and with Keras)
 
 This repo includes my solutions to the excercise labs for each of the topics.
